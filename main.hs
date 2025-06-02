@@ -1,3 +1,4 @@
+import System.IO.Unsafe (unsafePerformIO)
 -- Definição do tipo memoria
 type Memoria = [(Int, Int)]
 
@@ -70,10 +71,40 @@ executar mem0 = loop mem0 0 0 0
     loop mem pc acc eqz =
       let opcode = readMem mem pc
           addr   = readMem mem (pc + 1)
-          (halt, nextPC, (mem', acc', eqz')) = executarInstrucao pc opcode addr (mem, acc, eqz)
-      in if halt
-         then mem'
-         else loop mem' nextPC acc' eqz'
+          estadoAntes = (mem, acc, eqz)
+          (halt, nextPC, (mem', acc', eqz')) = executarInstrucao pc opcode addr estadoAntes
+          instrStr = instrucaoNome opcode addr
+      in
+        unsafePerformIO $ do
+          putStrLn $ 
+                     "<" ++ instrStr ++ "> " ++
+                     "PC=" ++ show pc ++
+                     " OP=" ++ show opcode ++
+                     " ADDR=" ++ show addr ++
+                     " | ACC=" ++ show acc ++
+                     " EQZ=" ++ show eqz
+          if halt
+            then do
+              putStr "Resultado: "
+              return mem'
+            else return (loop mem' nextPC acc' eqz')
+
+--            
+-- Funções auxiliares
+--
+
+instrucaoNome :: Int -> Int -> String
+instrucaoNome op addr = case op of
+  2  -> "LOD " ++ show addr
+  4  -> "STO " ++ show addr
+  6  -> "JMP " ++ show addr
+  8  -> "JMZ " ++ show addr
+  10 -> "CPE " ++ show addr
+  14 -> "ADD " ++ show addr
+  16 -> "SUB " ++ show addr
+  18 -> "NOP"
+  20 -> "HLT"
+  _  -> "INV"  -- Instrução inválida
 
 --
 -- Programas !
@@ -155,13 +186,18 @@ prog3 = [ -- Resposta esperada: A = 5, Resp = 11
   (251,0)     -- Resp
  ]
 
--- Não sei o que o "$" faz, mas tava dando erro de compilação e ele consertou
--- Não vou questionar
+-- Execução dos programas
 main1 :: IO ()
-main1 = print $ readMem (executar prog1) 251
+main1 = do
+  putStrLn "1) Resp = A + B – 2"
+  print (readMem (executar prog1) 251)
 
 main2 :: IO ()
-main2 = print $ readMem (executar prog2) 251
+main2 = do 
+  putStrLn "2) Resp = A * B"
+  print (readMem (executar prog2) 251)
 
 main3 :: IO ()
-main3 = print $ readMem (executar prog3) 251
+main3 = do
+  putStrLn "3) A = 0; Resp = 1; while(A < 5) { A = A + 1; Resp = Resp + 2; }"
+  print (readMem (executar prog3) 251)
