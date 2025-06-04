@@ -55,8 +55,8 @@ execCPE :: Int -> (Memoria, Int, Int) -> (Memoria, Int, Int)
 execCPE end (mem, acc, _) = (mem, if acc == readMem mem end then 0 else 1, if acc == readMem mem end then 1 else 0)
 
 executarInstrucao :: Int -> Int -> Int -> (Memoria, Int, Int) -> (Bool, Int, (Memoria, Int, Int))
-executarInstrucao pc opcode addr estado@(mem, acc, eqz) =
-  case opcode of -- Não sei o que esse "@" faz. O vscode disse para eu colocar
+executarInstrucao pc opcode addr estado@(mem, acc, eqz) =  -- @ usar a tupla inteira e/ou seus elementos.
+  case opcode of 
     2  -> (False, pc + 2, execLOD addr estado) -- LOD
     4  -> (False, pc + 2, execSTO addr estado) -- STO
     6  -> (False, addr, estado)  -- JMP
