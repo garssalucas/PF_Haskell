@@ -1,6 +1,6 @@
 -- Bibliotecas para printar na tela
 import System.IO.Unsafe (unsafePerformIO)
-import Text.Printf (printf) 
+import Text.Printf (printf)
 
 -- Definição do tipo memoria
 type Memoria = [(Int, Int)]
@@ -193,21 +193,21 @@ prog3 = [ -- Resposta esperada: A = 5, Resp = 11
 -- Execução dos programas
 main1 :: IO ()
 main1 = do
-  putStrLn "\n\t1) Resp = A + B – 2 | A = 5, B = 3"
+  putStrLn "\n\tResp = A + B – 2 | A = 5, B = 3"
   putStrLn "------------------------------------------------"
   memFinal <- executarIO prog1
   imprimeTela memFinal
 
 main2 :: IO ()
 main2 = do
-  putStrLn "\n\t2) Resp = A * B | A = 2, B = 3"
+  putStrLn "\n\tResp = A * B | A = 2, B = 3"
   putStrLn "------------------------------------------------"
   memFinal <- executarIO prog2
   imprimeTela memFinal
 
 main3 :: IO ()
 main3 = do
-  putStrLn "\n3) Resp = Resp + 2 | A = 0, Resp = 1\n   A = A + 1 { while(A<5) }"
+  putStrLn "\n\tA = 0;\n\tResp = 1;\n\twhile (A < 5) {\n\t A = A + 1;\n\t Resp = Resp + 2;\n\t}"
   putStrLn "------------------------------------------------"
   memFinal <- executarIO prog3
   imprimeTela memFinal
@@ -219,3 +219,14 @@ imprimeTela mem = do
   putStrLn "-------------------"
   mapM_ (\i -> printf "| Tela[%03d] = %3d |\n" i (readMem mem i)) [251..255]
   putStrLn "-------------------"
+
+
+--- Leitura de aqruivos para entrada
+executarArquivo :: FilePath -> IO ()
+executarArquivo arquivo = do
+  putStrLn $ "\nExecutando programa do arquivo '" ++ arquivo ++ "'\n"
+  conteudo <- readFile arquivo
+  let memoria = map read (lines conteudo) :: Memoria
+  memFinal <- executarIO memoria
+  imprimeTela memFinal
+
