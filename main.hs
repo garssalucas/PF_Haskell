@@ -1,4 +1,7 @@
+-- Bibliotecas para printar na tela
 import System.IO.Unsafe (unsafePerformIO)
+import Text.Printf (printf) 
+
 -- Definição do tipo memoria
 type Memoria = [(Int, Int)]
 
@@ -8,10 +11,10 @@ type Memoria = [(Int, Int)]
 
 -- Lê o conteúdo de um endereço da memória
 readMem :: Memoria -> Int -> Int
+readMem [] _ = 0 -- Not in memory = 0
 readMem ((e,v):ms) addr
     | e == addr = v
     | otherwise = readMem ms addr
-readMem [] _ = 0  -- Not in memory = 0
 
 -- Escreve um valor em um endereço da memória
 writeMem :: Memoria -> Int -> Int -> Memoria
@@ -65,29 +68,30 @@ executarInstrucao pc opcode addr estado@(mem, acc, eqz) =
     20 -> (True, pc + 2, estado)  -- HLT
     _  -> (False, pc + 2, estado) -- Instrução inválida é ignorada
 
-executar :: Memoria -> Memoria
-executar mem0 = loop mem0 0 0 0
+executar :: Memoria -> (Memoria, [String])
+executar mem0 = loop mem0 0 0 0 []
   where
-    loop mem pc acc eqz =
+    loop mem pc acc eqz log =
       let opcode = readMem mem pc
           addr   = readMem mem (pc + 1)
+          instrStr = instrucaoNome opcode addr
           estadoAntes = (mem, acc, eqz)
           (halt, nextPC, (mem', acc', eqz')) = executarInstrucao pc opcode addr estadoAntes
-          instrStr = instrucaoNome opcode addr
-      in
-        unsafePerformIO $ do
-          putStrLn $ 
-                     "<" ++ instrStr ++ "> " ++
-                     "PC=" ++ show pc ++
-                     " OP=" ++ show opcode ++
-                     " ADDR=" ++ show addr ++
-                     " | ACC=" ++ show acc ++
-                     " EQZ=" ++ show eqz
-          if halt
-            then do
-              putStr "Resultado: "
-              return mem'
-            else return (loop mem' nextPC acc' eqz')
+          linha = printf "<%-7s> PC=%03d OP=%03d ADDR=%03d | ACC=%03d EQZ=%d"
+                instrStr pc opcode addr acc eqz
+          novoLog = log ++ [linha]
+      in if halt
+         then (mem', novoLog)
+         else loop mem' nextPC acc' eqz' novoLog
+
+executarIO :: Memoria -> IO Memoria
+executarIO prog = do
+  let (memFinal, logExec) = executar prog
+  mapM_ putStrLn logExec
+  putStrLn "------------------------------------------------"
+  putStr "Memoria final:"
+  print memFinal
+  return memFinal         
 
 --            
 -- Funções auxiliares
@@ -189,15 +193,29 @@ prog3 = [ -- Resposta esperada: A = 5, Resp = 11
 -- Execução dos programas
 main1 :: IO ()
 main1 = do
-  putStrLn "1) Resp = A + B – 2"
-  print (readMem (executar prog1) 251)
+  putStrLn "\n\t1) Resp = A + B – 2 | A = 5, B = 3"
+  putStrLn "------------------------------------------------"
+  memFinal <- executarIO prog1
+  imprimeTela memFinal
 
 main2 :: IO ()
-main2 = do 
-  putStrLn "2) Resp = A * B"
-  print (readMem (executar prog2) 251)
+main2 = do
+  putStrLn "\n\t2) Resp = A * B | A = 2, B = 3"
+  putStrLn "------------------------------------------------"
+  memFinal <- executarIO prog2
+  imprimeTela memFinal
 
 main3 :: IO ()
 main3 = do
-  putStrLn "3) A = 0; Resp = 1; while(A < 5) { A = A + 1; Resp = Resp + 2; }"
-  print (readMem (executar prog3) 251)
+  putStrLn "\n3) Resp = Resp + 2 | A = 0, Resp = 1\n   A = A + 1 { while(A<5) }"
+  putStrLn "------------------------------------------------"
+  memFinal <- executarIO prog3
+  imprimeTela memFinal
+
+
+-- Controlador de video
+imprimeTela :: Memoria -> IO ()
+imprimeTela mem = do
+  putStrLn "-------------------"
+  mapM_ (\i -> printf "| Tela[%03d] = %3d |\n" i (readMem mem i)) [251..255]
+  putStrLn "-------------------"
