@@ -33,8 +33,8 @@ execNOP (mem, acc, eqz) = (mem, acc, eqz)
 
 -- LOD: Carrega valor da memória no acumulador
 execLOD :: Int -> (Memoria, Int, Int) -> (Memoria, Int, Int)
-execLOD end (mem, _, _) = (mem, val, if val == 0 then 1 else 0)
-  where val = readMem mem end
+execLOD end (mem, _, _) = (mem, acc, if acc == 0 then 1 else 0)
+  where acc = readMem mem end
 
 -- STO: Armazena valor do acumulador na memória
 execSTO :: Int -> (Memoria, Int, Int) -> (Memoria, Int, Int)
