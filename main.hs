@@ -191,6 +191,80 @@ prog3 = [ -- Resposta esperada: A = 5, Resp = 11
   (251,0)     -- Resp
  ]
 
+prog4 :: [(Int, Int)]  -- 4) Ordena A e B decrementando cada variavel para ver quem chega a zero primeiro
+prog4 = [
+  -- temp_a := a
+  (0, 2), (1, 242),     -- LOD a
+  (2, 4), (3, 240),     -- STO temp_a
+
+  -- temp_b := b
+  (4, 2), (5, 243),     -- LOD b
+  (6, 4), (7, 241),     -- STO temp_b
+
+  -- INÍCIO LOOP
+  -- if temp_a == 0 → fim (a <= b)
+  (8, 2), (9, 246),     -- LOD const_0
+  (10,10), (11, 240),   -- CPE temp_a
+  (12,8), (13, 50),     -- JMZ fim_loop
+
+  -- if temp_b == 0 → b terminou antes → A > B → troca
+  (14, 2), (15, 246),   -- LOD const_0
+  (16,10), (17, 241),   -- CPE temp_b
+  (18,8), (19, 52),     -- JMZ trocaAB
+
+  -- temp_a = temp_a - 1
+  (20,2), (21, 240),    -- LOD temp_a
+  (22,16),(23, 247),    -- SUB const_1
+  (24,4), (25, 240),    -- STO temp_a
+
+  -- temp_b = temp_b - 1
+  (26,2), (27, 241),    -- LOD temp_b
+  (28,16),(29, 247),    -- SUB const_1
+  (30,4), (31, 241),    -- STO temp_b
+
+  -- volta para início do loop
+  (32,6), (33, 8),      -- JMP para início do loop
+
+  -- FIM_LOOP (não troca)
+  (50,6), (51, 72),     -- JMP ir para impressão
+
+  -- TROCAR A e B
+  (52,2), (53, 242),    -- LOD a
+  (54,4), (55, 244),    -- STO temp = a
+
+  (56,2), (57, 243),    -- LOD b
+  (58,4), (59, 242),    -- a = b
+
+  (60,2), (61, 244),    -- LOD temp
+  (62,4), (63, 243),    -- b = temp
+
+  -- zerar temporários
+  (64,2), (65, 246),    -- LOD const_0
+  (66,4), (67, 240),    -- temp_a = 0
+  (68,4), (69, 241),    -- temp_b = 0
+  (70,4), (71, 244),    -- temp = 0
+
+  -- EXIBIR EM TELA
+  (72,2), (73, 242),    -- LOD a
+  (74,4), (75, 251),    -- tela[251]
+
+  (76,2), (77, 243),    -- LOD b
+  (78,4), (79, 252),    -- tela[252]
+
+  (80,20), (81,18),     -- HLT NOP
+
+  -- DADOS
+  (240, 0),   -- temp_a
+  (241, 0),   -- temp_b
+  (242, 111),  -- a
+  (243, 45),   -- b
+  (244, 0),   -- temp 
+  (246, 0),   -- const_0
+  (247, 1)    -- const_1
+ ]
+
+  
+
 -- Execução dos programas
 main1 :: IO ()
 main1 = do
@@ -213,6 +287,12 @@ main3 = do
   memFinal <- executarIO prog3
   imprimeTela memFinal
 
+main4 :: IO ()
+main4 = do
+  putStrLn "\n\t Ordena A e B \tA = 111, B = 45"
+  putStrLn "------------------------------------------------"
+  memFinal <- executarIO prog4
+  imprimeTela memFinal
 
 -- Controlador de video
 imprimeTela :: Memoria -> IO ()
@@ -222,7 +302,7 @@ imprimeTela mem = do
   putStrLn "-------------------"
 
 
---- Leitura de aqruivos para entrada
+--- Leitura de aqruivos para entrada -> instrução de uso = executarArquivo "nome_do_arquivo.txt"
 executarArquivo :: FilePath -> IO ()
 executarArquivo arquivo = do
   putStrLn $ "\nExecutando programa do arquivo '" ++ arquivo ++ "'\n"
