@@ -129,26 +129,27 @@ prog1 = [ -- Resposta esperada: 5 + 3 - 2 = 6
 
 prog2 :: [(Int, Int)] -- 2) Resp = A * B;
 prog2 = [ -- Resposta esperada: 2 * 3 = 6
-  (0,  2), (1, 245),   -- LOD 0     → ACC := 0
-  (2,  4), (3, 251),   -- STO 251   → Resp := 0
+  (0,  2), (1, 245),   -- LOD Const 0 → ACC := 0
+  (2,  4), (3, 251),   -- STO Resp := 0 → Resp := 0
   (4,  2), (5, 241),   -- LOD B
   (6,  4), (7, 242),   -- STO Temp
 
   (8,  2), (9, 242),   -- LOD Temp
-  (10,16), (11,245),  -- CPE 0
-  (12,8), (13,28),    -- JMZ FIM
+  (10,16), (11,245),  -- SUB Const 0 (para ativar EQZ)
+  (12,8), (13,28),    -- JMZ FIM (se Temp == 0)
 
   (14,2), (15,251),   -- LOD Resp
   (16,14), (17,240),  -- ADD A
   (18,4), (19,251),   -- STO Resp
 
   (20,2), (21,242),   -- LOD Temp
-  (22,16), (23,246),  -- SUB 1
+  (22,16), (23,246),  -- SUB Const 1
   (24,4), (25,242),   -- STO Temp
 
   (26,6), (27,8),     -- JMP LOOP
 
   (28,20), (29,18),   -- HLT NOP
+
   -- Dados
   (240, 2),   -- A = 2
   (241, 3),   -- B = 3
@@ -158,24 +159,24 @@ prog2 = [ -- Resposta esperada: 2 * 3 = 6
   (251, 0)    -- Resp
  ]
 
-prog3 :: [(Int, Int)] --3) A = 0; Resp = 1; while(A < 5) { A = A + 1; Resp = Resp + 2; }
+prog3 :: [(Int, Int)] -- 3) A = 0; Resp = 1; while(A < 5) { A = A + 1; Resp = Resp + 2; }
 prog3 = [ -- Resposta esperada: A = 5, Resp = 11
-  (0,  2), (1, 245),   -- LOD 1
+  (0,  2), (1, 245),   -- LOD Const 1
   (2,  4), (3, 251),   -- STO Resp := 1
-  (4,  2), (5, 245),   -- LOD 1
-  (6, 16), (7, 245),   -- SUB 1 → ACC = 0
+  (4,  2), (5, 245),   -- LOD Const 1
+  (6, 16), (7, 245),   -- SUB Const 1 → ACC = 0
   (8,  4), (9, 240),   -- STO A := 0
 
   (10,2), (11,240),   -- LOD A
-  (12,16), (13,247),  -- CPE 5
-  (14,8), (15,30),    -- JMZ FIM
+  (12,16), (13,247),  -- SUB Const 5
+  (14,8), (15,30),    -- JMZ FIM (se A == 5)
 
   (16,2), (17,240),   -- LOD A
-  (18,14), (19,245),  -- ADD 1
+  (18,14), (19,245),  -- ADD Const 1
   (20,4), (21,240),   -- STO A
 
   (22,2), (23,251),   -- LOD Resp
-  (24,14), (25,246),  -- ADD 2
+  (24,14), (25,246),  -- ADD Const 2
   (26,4), (27,251),   -- STO Resp
 
   (28,6), (29,10),    -- JMP LOOP
