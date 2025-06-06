@@ -191,7 +191,7 @@ prog3 = [ -- Resposta esperada: A = 5, Resp = 11
   (251,0)     -- Resp
  ]
 
-prog4 :: [(Int, Int)]  -- 4) Ordena A e B decrementando cada variavel para ver quem chega a zero primeiro
+prog4 :: [(Int, Int)]  -- 4) Ordena A e B decrementando cada variavel para ver quem chega a zero primeiro : 45, 111
 prog4 = [
   -- temp_a := a
   (0, 2), (1, 242),     -- LOD a
@@ -268,7 +268,7 @@ prog4 = [
 -- Execução dos programas
 main1 :: IO ()
 main1 = do
-  putStrLn "\n\tResp = A + B – 2 | A = 5, B = 3"
+  putStrLn "\n\tResp = A + B - 2 | A = 5, B = 3"
   putStrLn "------------------------------------------------"
   memFinal <- executarIO prog1
   imprimeTela memFinal
@@ -297,10 +297,11 @@ main4 = do
 -- Controlador de video
 imprimeTela :: Memoria -> IO ()
 imprimeTela mem = do
+  let resposta = readMem mem 251
   putStrLn "-------------------"
   mapM_ (\i -> printf "| Tela[%03d] = %3d |\n" i (readMem mem i)) [251..255]
   putStrLn "-------------------"
-
+  printf "RESPOSTA = %d\n" resposta
 
 --- Leitura de aqruivos para entrada -> instrução de uso = executarArquivo "nome_do_arquivo.txt"
 executarArquivo :: FilePath -> IO ()
@@ -310,4 +311,3 @@ executarArquivo arquivo = do
   let memoria = map read (lines conteudo) :: Memoria
   memFinal <- executarIO memoria
   imprimeTela memFinal
-
